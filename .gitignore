@@ -1,0 +1,9 @@
+# local install manifest (machine-specific, written by install.mjs)
+.installed.json
+
+# node
+node_modules/
+npm-debug.log*
+
+# os
+.DS_Store

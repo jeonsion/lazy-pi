@@ -1,0 +1,40 @@
+{
+  "name": "lazy-pi",
+  "version": "0.1.0",
+  "description": "Brings the lazycodex / oh-my-openagent workflow skills and MCP servers into the Pi / GSD (Claude Code) harness. The Pi counterpart to lazycodex.",
+  "type": "module",
+  "bin": {
+    "lazy-pi": "bin/lazy-pi.js"
+  },
+  "files": [
+    "bin",
+    "install.mjs",
+    "pi-harness-compat.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "install-skills": "node install.mjs",
+    "dry-run": "node install.mjs --dry-run"
+  },
+  "keywords": [
+    "pi",
+    "gsd",
+    "claude-code",
+    "lazycodex",
+    "oh-my-openagent",
+    "ai-agents",
+    "skills",
+    "mcp",
+    "orchestration"
+  ],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  }
+}
