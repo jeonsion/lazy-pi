@@ -70,40 +70,44 @@ The full mapping (and the omo-role → GSD-agent table) lives in
 
 ## Install
 
-Recommended — via npx (mirrors `npx lazycodex-ai install`):
+### 1. One-shot — skills + MCP only (recommended first run)
+
+Installs the skills and MCP servers into Pi. The `lazy-pi` command runs from the npx cache and
+does not stay on PATH after the terminal closes.
 
 ```bash
-npx lazy-pi install
+npx lazy-pi install             # core workflow set (idempotent — safe to re-run)
 npx lazy-pi install --all       # also install heavy/peripheral skills
 npx lazy-pi install --dry-run   # preview without touching the filesystem
 ```
 
-Alternative — clone and run directly:
+### 2. Global install — keep the `lazy-pi` command permanently
+
+After step 1, install globally so `lazy-pi` is always on PATH:
+
+```bash
+npm install -g lazy-pi@latest
+```
+
+Now the command is available from any terminal:
+
+```bash
+lazy-pi status                  # show what is installed
+lazy-pi uninstall               # remove everything lazy-pi added
+lazy-pi --version
+lazy-pi --help
+```
+
+### 3. Clone and run (no npm)
 
 ```bash
 git clone https://github.com/jeonsion/lazy-pi.git
 cd lazy-pi
-node install.mjs                # install the core set (idempotent — safe to re-run)
-node install.mjs --all
+node install.mjs                # same as `npx lazy-pi install`
 ```
 
 A re-run re-copies skills from the latest installed OmO version and re-injects a fresh shim, so it
-doubles as the **update** path: bump OmO (`omo install --platform=codex`), then re-run `npx lazy-pi install`.
-
-### Uninstall
-
-```bash
-npx lazy-pi uninstall           # remove every skill + MCP server lazy-pi installed
-npx lazy-pi uninstall --dry-run # preview
-```
-
-### Status
-
-```bash
-npx lazy-pi status              # show installed version, skills, MCP servers
-npx lazy-pi --version           # version only
-npx lazy-pi --help              # usage summary
-```
+doubles as the **update** path: bump OmO (`omo install --platform=codex`), then re-run `lazy-pi install`.
 
 > After install or uninstall, **start a new Pi session** so the skill loader and MCP client re-scan
 > `~/.gsd/agent/skills/` and `~/.gsd/agent/mcp.json`.
