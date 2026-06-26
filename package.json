@@ -1,6 +1,6 @@
 {
   "name": "lazy-pi",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Brings the lazycodex / oh-my-openagent workflow skills and MCP servers into the Pi / GSD (Claude Code) harness. The Pi counterpart to lazycodex.",
   "type": "module",
   "bin": {
@@ -11,11 +11,17 @@
     "install.mjs",
     "pi-harness-compat.md",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
     "install-skills": "node install.mjs",
-    "dry-run": "node install.mjs --dry-run"
+    "dry-run": "node install.mjs --dry-run",
+    "uninstall": "node install.mjs --uninstall",
+    "status": "node bin/lazy-pi.js status",
+    "release:patch": "npm version patch && git push --follow-tags",
+    "release:minor": "npm version minor && git push --follow-tags",
+    "release:major": "npm version major && git push --follow-tags"
   },
   "keywords": [
     "pi",
@@ -28,13 +34,20 @@
     "mcp",
     "orchestration"
   ],
-  "author": "",
+  "author": "jeonsion",
   "license": "MIT",
   "engines": {
     "node": ">=18"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
-    "url": ""
-  }
+    "url": "git+https://github.com/jeonsion/lazy-pi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/jeonsion/lazy-pi/issues"
+  },
+  "homepage": "https://github.com/jeonsion/lazy-pi#readme"
 }

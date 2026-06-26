@@ -1,5 +1,9 @@
 # lazy-pi
 
+[![npm version](https://img.shields.io/npm/v/lazy-pi?label=npm&logo=npm)](https://www.npmjs.com/package/lazy-pi)
+[![npm downloads](https://img.shields.io/npm/dm/lazy-pi?label=downloads&logo=npm&color=red)](https://www.npmjs.com/package/lazy-pi)
+[![License: MIT](https://img.shields.io/github/license/jeonsion/lazy-pi?label=license)](https://github.com/jeonsion/lazy-pi/blob/main/LICENSE)
+
 **The [lazycodex](https://github.com/code-yeongyu/lazycodex) workflow, ported to the Pi / GSD ([gsd-pi](https://github.com/open-gsd/gsd-pi)) harness.**
 
 lazycodex distributes [oh-my-openagent (OmO)](https://github.com/code-yeongyu/oh-my-openagent) —
@@ -66,22 +70,42 @@ The full mapping (and the omo-role → GSD-agent table) lives in
 
 ## Install
 
-```sh
-# via the repo (clone, then):
-node install.mjs            # install the core workflow set (idempotent — safe to re-run)
-node install.mjs --all      # also install heavy/peripheral skills
-node install.mjs --dry-run  # print what would change, change nothing
-node install.mjs --uninstall
+Recommended — via npx (mirrors `npx lazycodex-ai install`):
 
-# or, once published, via npx (mirrors `npx lazycodex-ai install`):
+```bash
 npx lazy-pi install
-npx lazy-pi install --all
+npx lazy-pi install --all       # also install heavy/peripheral skills
+npx lazy-pi install --dry-run   # preview without touching the filesystem
+```
+
+Alternative — clone and run directly:
+
+```bash
+git clone https://github.com/jeonsion/lazy-pi.git
+cd lazy-pi
+node install.mjs                # install the core set (idempotent — safe to re-run)
+node install.mjs --all
 ```
 
 A re-run re-copies skills from the latest installed OmO version and re-injects a fresh shim, so it
-doubles as the **update** path: bump OmO, then re-run `node install.mjs`.
+doubles as the **update** path: bump OmO (`omo install --platform=codex`), then re-run `npx lazy-pi install`.
 
-> After install, **start a new Pi session** so the skill loader and MCP client re-scan
+### Uninstall
+
+```bash
+npx lazy-pi uninstall           # remove every skill + MCP server lazy-pi installed
+npx lazy-pi uninstall --dry-run # preview
+```
+
+### Status
+
+```bash
+npx lazy-pi status              # show installed version, skills, MCP servers
+npx lazy-pi --version           # version only
+npx lazy-pi --help              # usage summary
+```
+
+> After install or uninstall, **start a new Pi session** so the skill loader and MCP client re-scan
 > `~/.gsd/agent/skills/` and `~/.gsd/agent/mcp.json`.
 
 ## Scope
@@ -111,11 +135,13 @@ explicitly instead of having a hook auto-fire it.
 
 ## Safety & reversibility
 
-- **No clobbering.** If a skill directory already exists and lazy-pi did not create it, it's skipped
-  with a `COLLISION` notice — never overwritten.
-- **Backed up.** `~/.gsd/agent/mcp.json` is copied to `mcp.json.lazypi-bak` before the first edit.
-- **Tracked.** `.installed.json` records exactly which skills and MCP servers were added, so
-  `--uninstall` removes only those and nothing else.
+- **No clobbering.** If a skill directory already exists and lazy-pi did not create it (checked via
+  shim-marker or manifest), it's skipped with a `COLLISION` notice — never overwritten.
+- **Backed up.** `~/.gsd/agent/mcp.json` is copied to `mcp.json.lazy-pi-bak` before the first edit.
+- **Tracked.** `~/.gsd/agent/.lazy-pi-installed.json` records exactly which skills and MCP servers
+  were added, so `uninstall` removes only those and nothing else.
+- **Upgrade aware.** Re-running with a newer version logs an upgrade notice and refreshes all skills
+  with the latest shim.
 - **Isolated artifacts.** Workflow artifacts stay under `.omo/` (plans / drafts / evidence /
   ledgers) and never touch GSD's own `.gsd/` state.
 
@@ -123,13 +149,21 @@ explicitly instead of having a hook auto-fire it.
 
 ```
 lazy-pi/
-  bin/lazy-pi.js         # npx entry — thin wrapper around install.mjs
+  bin/lazy-pi.js         # npx entry — subcommand router (install / uninstall / status)
   install.mjs            # idempotent installer / updater / uninstaller
   pi-harness-compat.md   # the Pi translation shim injected into every skill
+  CHANGELOG.md
   package.json
   README.md
   LICENSE
-  .installed.json        # generated manifest of what was installed (gitignored)
+```
+
+Installed state lives under `~/.gsd/agent/`:
+
+```
+~/.gsd/agent/
+  .lazy-pi-installed.json   # manifest of installed skills + MCP servers
+  mcp.json.lazy-pi-bak      # one-time backup of mcp.json
 ```
 
 ## How it works (internals)
@@ -143,7 +177,8 @@ lazy-pi/
    intact and the shim is read first.
 3. Deep-merges the five MCP server definitions into `~/.gsd/agent/mcp.json` (creating a one-time
    `.lazypi-bak` backup), pointing each at OmO's already-built dist binary.
-4. Writes `.installed.json` so the operation is fully reversible.
+4. Writes `~/.gsd/agent/.lazy-pi-installed.json` so the operation is fully reversible
+   (and `npx lazy-pi uninstall` finds its manifest even when the bundle cache has been cleaned).
 
 ## Credits & license
 
