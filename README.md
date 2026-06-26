@@ -89,13 +89,13 @@ After step 1, install globally so `lazy-pi` is always on PATH:
 npm install -g lazy-pi@latest
 ```
 
-Now the command is available from any terminal:
+Now just run `lazy-pi` — it shows a live dashboard, or auto-installs if needed:
 
 ```bash
-lazy-pi status                  # show what is installed
-lazy-pi uninstall               # remove everything lazy-pi added
-lazy-pi --version
-lazy-pi --help
+lazy-pi                          # dashboard (installed) or auto-install (first run)
+lazy-pi status                   # full install details
+lazy-pi uninstall                # remove everything lazy-pi added
+lazy-pi --help                   # all commands
 ```
 
 ### 3. Clone and run (no npm)
