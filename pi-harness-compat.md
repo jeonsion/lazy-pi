@@ -10,37 +10,51 @@ body conflicts with this section, **this section wins.**
 
 | Codex / OpenCode example | Pi-native equivalent |
 | --- | --- |
-| `multi_agent_v1.spawn_agent({"message": M, "agent_type": R, "fork_context": false})` | `subagent` tool. Put the full self-contained assignment (TASK / DELIVERABLE / SCOPE / VERIFY) in the prompt. Choose the Pi agent for role `R` via the **Agent-role mapping** table. |
-| Several independent `spawn_agent` calls | ONE `subagent` call in **parallel mode** (required when ≥2 ready tasks are independent). Do not serialize independent work. |
-| `multi_agent_v1.wait_agent(...)` / `send_input` / `close_agent` | Not needed — the Pi `subagent` dispatch returns the child's result directly. For fan-out, read the parallel results when the call returns. |
-| `call_omo_agent(subagent_type="explore", ...)` | `subagent` → **scout** |
-| `task(subagent_type="plan", ...)` | `subagent` → **planner** |
-| `task(category=..., ...)` (implementation / QA worker) | `subagent` → **worker** (impl) or **tester** (QA) |
+| `multi_agent_v1.spawn_agent(...)` | **Prefer inline execution first.** Only dispatch a `subagent` when: (a) ≥2 tasks can run in parallel, (b) the task scans many files and would bloat main context, or (c) the task needs isolated reasoning (reviewer/planner). Otherwise — single small impl, simple QA, targeted file edits — just do it yourself inline. Tokens saved. |
+| Several independent `spawn_agent` calls that are genuinely parallel | ONE `subagent` call in **parallel mode**. Do not serialize independent work. |
+| `multi_agent_v1.wait_agent(...)` / `send_input` / `close_agent` | Not needed — `subagent` returns the result directly. |
+| `call_omo_agent(subagent_type="explore", ...)` | Inline `read` + `rg` + `lsp` for small scope. `subagent` → **scout** only when scanning a broad subsystem. |
+| `task(subagent_type="plan", ...)` | Do the planning inline unless the codebase is too large for one context. |
+| `task(category=..., ...)` (implementation worker) | Do it inline. You have the full tool surface. Only dispatch to **worker** if the task is independently verifiable and large. |
+| `task(category=..., ...)` (QA worker) | Do it inline — run the tests, check the output. |
 | `apply_patch` | `edit` (surgical find/replace) or `write` (new file / full rewrite). Always `read` before `edit`. |
-| `update_plan` | Use `TaskCreate` / `TaskUpdate` for the visible todo list, or just narrate. There is no `update_plan` in Pi. |
-| `shell(cmd)` / `bash(cmd)` | `bash` (blocks, read result now) or `async_bash` (non-blocking, `await_job` later). For servers/watchers use `bg_shell`. |
+| `update_plan` | Use `TaskCreate` / `TaskUpdate` for the visible todo list, or just narrate. |
+| `shell(cmd)` / `bash(cmd)` | `bash` (blocks) or `async_bash` (non-blocking, `await_job` later). For servers/watchers use `bg_shell`. |
 | `background_output(...)` | `await_job` (for `async_bash`) or `bg_shell` `output`/`digest`. |
 | Codex `read_file` / OpenCode `read` | `read` |
 | ripgrep via shell for symbol defs | prefer `lsp` (definition/references/symbols); use `rg` for text. |
 
+### When to use subagent vs inline
+
+**Do it inline (no subagent) when:**
+- Single file edit, small refactor, targeted fix
+- Running tests or verifying output
+- Reading ≤5 files
+- Any task under ~3 trivial steps
+
+**Use subagent when:**
+- ≥2 genuinely independent tasks (parallel dispatch saves wall time)
+- Scanning a broad subsystem (10+ files) — keeps main context clean
+- External research / doc lookup that would bloat with raw search results
+- Reviewer/planner roles that need isolated, focused reasoning
+
+Default: inline. Subagent is the exception, not the rule.
+
 ### Agent-role mapping (omo role → Pi/GSD agent)
 
-Pass the Pi agent name to `subagent`. These GSD agents already exist in `~/.gsd/agent/agents/`.
+When you do dispatch a `subagent`, pick the GSD agent from this table.
 
 | omo / lazycodex role | Pi/GSD agent | Use for |
 | --- | --- | --- |
-| `explorer` / `explore` | **scout** | internal codebase patterns, conventions, tests, where-things-live |
-| `librarian` | **researcher** | external docs/contracts, best-practice lookup |
-| `plan` | **planner** | architecture/plan drafting |
+| `explorer` / `explore` | **scout** | broad codebase scan (skip for narrow searches — use `rg`/`lsp` inline) |
+| `librarian` | **researcher** | external docs/contracts lookup |
+| `plan` | **planner** | plan drafting (large codebase) |
 | `metis` (gap analysis) | **reviewer** | finding gaps/holes in a plan |
 | `momus` (plan reviewer) | **reviewer** | high-accuracy plan review |
 | `lazycodex-code-reviewer` | **reviewer** | code review |
 | `lazycodex-gate-reviewer` | **reviewer** | final verification gate |
-| `lazycodex-qa-executor` | **tester** | execute QA / write & run tests |
-| generic implementation worker | **worker** | implement a unit of the plan |
-
-If a needed role has no close match, omit `agent_type` and describe the role fully inside the `subagent`
-prompt — the child runs with that prose as its instructions.
+| `lazycodex-qa-executor` | **tester** | complex QA suites (simple QA: inline) |
+| generic implementation worker | **worker** | large, independently verifiable implementation units |
 
 ### Things that work UNCHANGED in Pi
 
