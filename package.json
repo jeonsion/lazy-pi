@@ -1,54 +1,31 @@
 {
   "name": "lazy-pi",
-  "version": "0.2.0",
-  "description": "Brings the lazycodex / oh-my-openagent workflow skills and MCP servers into the Pi / GSD (Claude Code) harness. The Pi counterpart to lazycodex.",
+  "version": "0.1.0",
+  "description": "lazycodex / OmO workflow ported to Pi (GSD). Adds ulw-plan, start-work, ulw-loop and more to your Pi agent.",
   "type": "module",
   "bin": {
-    "lazy-pi": "bin/lazy-pi.js"
+    "lazy-pi": "install.mjs"
   },
   "files": [
-    "bin",
     "install.mjs",
-    "tui.mjs",
     "pi-harness-compat.md",
     "README.md",
-    "CHANGELOG.md",
     "LICENSE"
   ],
-  "scripts": {
-    "install-skills": "node install.mjs",
-    "dry-run": "node install.mjs --dry-run",
-    "uninstall": "node install.mjs --uninstall",
-    "status": "node bin/lazy-pi.js status",
-    "release:patch": "npm version patch && git push --follow-tags",
-    "release:minor": "npm version minor && git push --follow-tags",
-    "release:major": "npm version major && git push --follow-tags"
-  },
   "keywords": [
     "pi",
     "gsd",
-    "claude-code",
     "lazycodex",
-    "oh-my-openagent",
-    "ai-agents",
+    "omo",
+    "ulw-plan",
     "skills",
-    "mcp",
-    "orchestration"
+    "mcp"
   ],
   "author": "jeonsion",
   "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/jeonsion/lazy-pi.git"
-  },
-  "bugs": {
-    "url": "https://github.com/jeonsion/lazy-pi/issues"
   },
   "homepage": "https://github.com/jeonsion/lazy-pi#readme"
 }
