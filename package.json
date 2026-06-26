@@ -9,6 +9,7 @@
   "files": [
     "bin",
     "install.mjs",
+    "tui.mjs",
     "pi-harness-compat.md",
     "README.md",
     "CHANGELOG.md",
